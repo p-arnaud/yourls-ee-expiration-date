@@ -261,6 +261,13 @@ function api_edit_url_update_date() {
   if( !isset( $ydb->option[ 'ee_expirationdate' ] ) ){
     yourls_add_option( 'ee_expirationdate', 'null' );
   }
+  if( isset( $_REQUEST[ 'url-date-active' ]) && ( $_REQUEST[ 'url-date-active' ] === 'true' ) && isset( $_REQUEST[ 'url-date' ] ) ){
+    $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
+    $date = ee_expiration_date_sanitize_date($_REQUEST[ 'url-date' ]);
+    $ee_date_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+    $ee_date_array[$shorturl] = $date;
+    yourls_update_option( 'ee_expirationdate', json_encode( $ee_date_array ) );
+  }
   if (isset( $_REQUEST[ 'url-date-active' ]) && $_REQUEST[ 'url-date-active' ] === 'false') {
     $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
     $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
