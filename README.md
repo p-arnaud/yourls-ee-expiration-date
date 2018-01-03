@@ -7,6 +7,14 @@ Description
 -----------
 This plugin enables the feature of expiration date for your short URLs.
 
+API
+---
+This plugin can extends the API plugin: [yourls-api-edit-url](https://github.com/timcrockford/yourls-api-edit-url)
+You can update expiration date adding *url-date-active* parameter (true/false) and *url-date* parameter (format (YYYY-MM-DD)).
+
+Example:
+ /yourls-api.php?username=username&password=password&format=json&action=update&url=ozh&url-date-active=true&url-date=2018-02-03&shorturl=ozh
+
 Installation
 ------------
 1. In `/user/plugins`, create a new folder named `yourls-ee-expiration-date`.
