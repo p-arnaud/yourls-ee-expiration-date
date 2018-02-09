@@ -14,14 +14,14 @@ if( !defined( 'YOURLS_ABSPATH' ) ) die();
 // Add column to admin's url listing
 yourls_add_filter('table_head_cells', 'ee_expiration_date_table_head_cells');
 function ee_expiration_date_table_head_cells($args) {
-  $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
-  if ($ee_multi_users_plugin == 1 and ee_multi_users_is_admin(YOURLS_USER) === true) {
-      return $args;
-  }
-  else {
-      $args['expire-date'] = 'Expiration date';
-  }
-  return $args;
+    $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+    if ($ee_multi_users_plugin == 1 and ee_multi_users_is_admin(YOURLS_USER) === true) {
+        return $args;
+    }
+    else {
+        $args['expire-date'] = 'Expiration date';
+    }
+    return $args;
 }
 // Show date in admin's url listing
 yourls_add_filter('table_add_row_cell_array', 'ee_expiration_date_table_add_row_cell_array');
@@ -32,52 +32,52 @@ function ee_expiration_date_table_add_row_cell_array($args) {
 
     }
     else {
-      global $ydb;
-      $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-      if ($ee_expirationdate_array[$args['keyword']['keyword_html']]) {
-          $str_date = $ee_expirationdate_array[$args['keyword']['keyword_html']];
-          $format = 'Y-m-d';
-          $date = DateTime::createFromFormat($format, $str_date);
-          $datetime = new DateTime('now');
-          $format = 'd/m/Y';
-          $str_date = date_format ( $date , $format );
-          if ( $date < $datetime ) {
+        global $ydb;
+        $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+        if ($ee_expirationdate_array[$args['keyword']['keyword_html']]) {
+            $str_date = $ee_expirationdate_array[$args['keyword']['keyword_html']];
+            $format = 'Y-m-d';
+            $date = DateTime::createFromFormat($format, $str_date);
+            $datetime = new DateTime('now');
+            $format = 'd/m/Y';
+            $str_date = date_format ( $date , $format );
+            if ( $date < $datetime ) {
 
-            $str_date = '<s>' . $str_date . '</s>';
-          }
-      } else {
-        $str_date = "";
-      }
+                $str_date = '<s>' . $str_date . '</s>';
+            }
+        } else {
+            $str_date = "";
+        }
 
-      $args['expire-date'] = array(
-        'template' => '%expire-date%',
-        'expire-date' => '<a " href=plugins.php?page=ee_expirationdate&shortname=' . $args['keyword']['keyword_html'] . '><img src="../images/pencil.png"/></a> ' . $str_date,
-      );
-  }
-  return $args;
+        $args['expire-date'] = array(
+            'template' => '%expire-date%',
+            'expire-date' => '<a " href=plugins.php?page=ee_expirationdate&shortname=' . $args['keyword']['keyword_html'] . '><img src="../images/pencil.png"/></a> ' . $str_date,
+        );
+    }
+    return $args;
 }
 
 // Do redirection
 yourls_add_action( 'pre_redirect', 'ee_check_date' );
 function ee_check_date( $args ) {
-	global $ydb;
+    global $ydb;
 
-	if( !isset($ydb->option[ 'ee_expirationdate' ]) ){
-		yourls_add_option( 'ee_expirationdate', 'null' );
-	}
+    if( !isset($ydb->option[ 'ee_expirationdate' ]) ){
+        yourls_add_option( 'ee_expirationdate', 'null' );
+    }
 
-	$ee_expirationdate_fullurl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-	$ee_expirationdate_urlpath = parse_url( $ee_expirationdate_fullurl, PHP_URL_PATH );
-	$ee_expirationdate_pathFragments = explode( '/', $ee_expirationdate_urlpath );
-	$ee_expirationdate_short = end( $ee_expirationdate_pathFragments );
+    $ee_expirationdate_fullurl = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+    $ee_expirationdate_urlpath = parse_url( $ee_expirationdate_fullurl, PHP_URL_PATH );
+    $ee_expirationdate_pathFragments = explode( '/', $ee_expirationdate_urlpath );
+    $ee_expirationdate_short = end( $ee_expirationdate_pathFragments );
 
-	$ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-  if( array_key_exists( $ee_expirationdate_short, $ee_expirationdate_array ) ) {
-    $format = 'Y-m-d';
-    $date = DateTime::createFromFormat($format, $ee_expirationdate_array[$ee_expirationdate_short]);
-    $datetime = new DateTime('now');
-    if ( $date < $datetime ) {
-      echo <<<ERROR
+    $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+    if( array_key_exists( $ee_expirationdate_short, $ee_expirationdate_array ) ) {
+        $format = 'Y-m-d';
+        $date = DateTime::createFromFormat($format, $ee_expirationdate_array[$ee_expirationdate_short]);
+        $datetime = new DateTime('now');
+        if ( $date < $datetime ) {
+            echo <<<ERROR
       <style>
         #error-box {
           background-color: #e8e8e8;
@@ -97,84 +97,84 @@ function ee_check_date( $args ) {
         <p>Sorry, this link has expired.</p>
       </div>
 ERROR;
-    die;
+            die;
+        }
     }
-  }
 }
 
 // Register plugin page in admin page
 yourls_add_action( 'plugins_loaded', 'ee_expirationdate_display_panel' );
 function ee_expirationdate_display_panel() {
-	yourls_register_plugin_page( 'ee_expirationdate', 'YOURLS EE Expiration Date', 'ee_expirationdate_display_page' );
+    yourls_register_plugin_page( 'ee_expirationdate', 'YOURLS EE Expiration Date', 'ee_expirationdate_display_page' );
 }
 
 // Function which will draw the admin page
 function ee_expirationdate_display_page() {
-	global $ydb;
-	if( isset( $_POST[ 'date-checked' ] ) && isset( $_POST[ 'date' ] ) || isset( $_POST[ 'date-unchecked' ] ) ) {
-		ee_expirationdate_process_new();
-	} else {
-		if( !isset( $ydb->option[ 'ee_expirationdate' ] ) ){
-			yourls_add_option( 'ee_expirationdate', 'null' );
-		}
-	}
-  ee_expirationdate_process_display();
+    global $ydb;
+    if( isset( $_POST[ 'date-checked' ] ) && isset( $_POST[ 'date' ] ) || isset( $_POST[ 'date-unchecked' ] ) ) {
+        ee_expirationdate_process_new();
+    } else {
+        if( !isset( $ydb->option[ 'ee_expirationdate' ] ) ){
+            yourls_add_option( 'ee_expirationdate', 'null' );
+        }
+    }
+    ee_expirationdate_process_display();
 }
 
 // Set/Delete date from DB
 function ee_expirationdate_process_new() {
-	global $ydb;
-	$ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
+    global $ydb;
+    $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
 
-	$ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+    $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
     $user_keywords = array();
     if ($ee_multi_users_plugin == 1) {
-      $user_keywords = ee_multi_users_get_current_user_keywords();
+        $user_keywords = ee_multi_users_get_current_user_keywords();
     }
 
     // Sanitize
     foreach ($_POST[ 'date' ] as $key => $value) {
-      if (array_search($key, $user_keywords) !== false) {
-        $sanitized = ee_expiration_date_sanitize_date($value);
-        if ($sanitized === false) {
-          unset($ee_expirationdate_array[$key]);
-        } else {
-          $ee_expirationdate_array[$key] = ee_expiration_date_sanitize_date($value);
+        if (array_search($key, $user_keywords) !== false) {
+            $sanitized = ee_expiration_date_sanitize_date($value);
+            if ($sanitized === false) {
+                unset($ee_expirationdate_array[$key]);
+            } else {
+                $ee_expirationdate_array[$key] = ee_expiration_date_sanitize_date($value);
+            }
         }
-      }
     }
     foreach ( $ee_expirationdate_array as $key => $value ){
         if ($ee_multi_users_plugin == 0 || array_search($key, $user_keywords) !== false) {
-          if (array_search($key, array_keys($_POST['date'])) === false) {
-            unset($ee_expirationdate_array[ $key ]);
-          }
+            if (array_search($key, array_keys($_POST['date'])) === false) {
+                unset($ee_expirationdate_array[ $key ]);
+            }
         }
     }
     yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
-	echo "<p style='color: green'>Success!</p>";
-  return yourls_apply_filter( 'ee_expirationdate_process_new', $_POST );
+    echo "<p style='color: green'>Success!</p>";
+    return yourls_apply_filter( 'ee_expirationdate_process_new', $_POST );
 }
 
 //Display Form
 function ee_expirationdate_process_display() {
-	global $ydb;
+    global $ydb;
     $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
     $user_keywords = array();
     if ($ee_multi_users_plugin == 1) {
-      $where = ee_multi_users_admin_list_where();
+        $where = ee_multi_users_admin_list_where();
     }
     else {
-      $where = "";
+        $where = "";
     }
 
-	$table = YOURLS_DB_TABLE_URL;
-	$query = $ydb->get_results( "SELECT * FROM `$table` WHERE 1=1" . $where );
+    $table = YOURLS_DB_TABLE_URL;
+    $query = $ydb->get_results( "SELECT * FROM `$table` WHERE 1=1" . $where );
 
-	$ee_su = yourls__( "Short URL"   , "ee_expirationdate" ); //Translate "Short URL"
-	$ee_ou = yourls__( "Original URL", "ee_expirationdate" ); //Translate "Original URL"
-	$ee_date = yourls__( "Date"    , "ee_expirationdate" ); //Translate "Date"
+    $ee_su = yourls__( "Short URL"   , "ee_expirationdate" ); //Translate "Short URL"
+    $ee_ou = yourls__( "Original URL", "ee_expirationdate" ); //Translate "Original URL"
+    $ee_date = yourls__( "Date"    , "ee_expirationdate" ); //Translate "Date"
 
-	echo <<<TB
+    echo <<<TB
 	<style>
 	table {
 		border-collapse: collapse;
@@ -198,43 +198,43 @@ function ee_expirationdate_process_display() {
 					<th>$ee_date</th>
 				</tr>
 TB;
-	foreach( $query as $link ) { // Displays all shorturls in the YOURLS DB
+    foreach( $query as $link ) { // Displays all shorturls in the YOURLS DB
 
-  		$short = $link->keyword;
-  		$url = $link->url;
-  		$ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
+        $short = $link->keyword;
+        $url = $link->url;
+        $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
 
-  		if( strlen( $url ) > 31 ) { //If URL is too long it will shorten it
-  			$sURL = substr( $url, 0, 30 ). "...";
-  		} else {
-  			$sURL = $url;
-  		}
+        if( strlen( $url ) > 31 ) { //If URL is too long it will shorten it
+            $sURL = substr( $url, 0, 30 ). "...";
+        } else {
+            $sURL = $url;
+        }
 
-      $date = null;
-      $date_text = yourls__( "Enable?" );
-      $date_date = '';
-      $date_checked = '';
-      $date_unchecked = ' disabled';
-      $date_style = 'display: none';
-      $date_disabled = ' disabled';
-      if( array_key_exists( $short, $ee_expirationdate_array ) ){ //Check's if URL is currently date protected or not
-        $text = yourls__( "Enable?" );
-        $date = $ee_expirationdate_array[ $short ];
+        $date = null;
+        $date_text = yourls__( "Enable?" );
+        $date_date = '';
+        $date_checked = '';
+        $date_unchecked = ' disabled';
+        $date_style = 'display: none';
+        $date_disabled = ' disabled';
+        if( array_key_exists( $short, $ee_expirationdate_array ) ){ //Check's if URL is currently date protected or not
+            $text = yourls__( "Enable?" );
+            $date = $ee_expirationdate_array[ $short ];
 
-        $date_checked = " checked";
-        $date_unchecked = '';
-        $date_style = '';
-        $date_disabled = '';
-      }
-     // Only show selected item if this page is called with 'shortname' parameter
-     if ((isset($_GET['shortname']) && $_GET['shortname'] == $link->keyword) || !isset($_GET['shortname'])) {
-       $display = 'table-row';
-     }
-     else {
-      $display = 'none';
-     }
+            $date_checked = " checked";
+            $date_unchecked = '';
+            $date_style = '';
+            $date_disabled = '';
+        }
+        // Only show selected item if this page is called with 'shortname' parameter
+        if ((isset($_GET['shortname']) && $_GET['shortname'] == $link->keyword) || !isset($_GET['shortname'])) {
+            $display = 'table-row';
+        }
+        else {
+            $display = 'none';
+        }
 
-  		echo <<<TABLE
+        echo <<<TABLE
   				<tr style=display:$display>
   					<td>$short</td>
   					<td><span title="$url">$sURL</span></td>
@@ -245,9 +245,9 @@ TB;
   					</td>
   				</tr>
 TABLE;
-    // }
-	}
-	echo <<<END
+        // }
+    }
+    echo <<<END
 			</table>
 			<input type="submit" value="Submit">
 		</form>
@@ -275,46 +275,46 @@ END;
 // Delete old settings when a link is delete
 yourls_add_action( 'delete_link' , 'ee_expiration_date_delete_link');
 function ee_expiration_date_delete_link( $args ) {
-  $keyword = $args[0];
-  global $ydb;
+    $keyword = $args[0];
+    global $ydb;
 
-  $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-  unset($ee_expirationdate_array[$keyword] );
-  if ( count($ee_expirationdate_array) > 0) {
-    yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
-  }
-  else {
-    yourls_update_option( 'ee_expirationdate', null );
-  }
+    $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+    unset($ee_expirationdate_array[$keyword] );
+    if ( count($ee_expirationdate_array) > 0) {
+        yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
+    }
+    else {
+        yourls_update_option( 'ee_expirationdate', null );
+    }
 }
 
 
 yourls_add_filter( 'api_action_update', 'api_edit_url_update_date' );
 function api_edit_url_update_date() {
-  global $ydb;
-  if( !isset( $ydb->option[ 'ee_expirationdate' ] ) ){
-    yourls_add_option( 'ee_expirationdate', 'null' );
-  }
-  if( isset( $_REQUEST[ 'url-date-active' ]) && ( $_REQUEST[ 'url-date-active' ] === 'true' ) && isset( $_REQUEST[ 'url-date' ] ) ){
-    $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
-    $date = ee_expiration_date_sanitize_date($_REQUEST[ 'url-date' ]);
-    $ee_date_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-    $ee_date_array[$shorturl] = $date;
-    yourls_update_option( 'ee_expirationdate', json_encode( $ee_date_array ) );
-  }
-  if (isset( $_REQUEST[ 'url-date-active' ]) && $_REQUEST[ 'url-date-active' ] === 'false') {
-    $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
-    $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-    unset($ee_expirationdate_array[$shorturl] );
-    yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
-  }
+    global $ydb;
+    if( !isset( $ydb->option[ 'ee_expirationdate' ] ) ){
+        yourls_add_option( 'ee_expirationdate', 'null' );
+    }
+    if( isset( $_REQUEST[ 'url-date-active' ]) && ( $_REQUEST[ 'url-date-active' ] === 'true' ) && isset( $_REQUEST[ 'url-date' ] ) ){
+        $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
+        $date = ee_expiration_date_sanitize_date($_REQUEST[ 'url-date' ]);
+        $ee_date_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+        $ee_date_array[$shorturl] = $date;
+        yourls_update_option( 'ee_expirationdate', json_encode( $ee_date_array ) );
+    }
+    if (isset( $_REQUEST[ 'url-date-active' ]) && $_REQUEST[ 'url-date-active' ] === 'false') {
+        $shorturl = yourls_sanitize_string($_REQUEST['shorturl']);
+        $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+        unset($ee_expirationdate_array[$shorturl] );
+        yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
+    }
 }
 
 function ee_expiration_date_sanitize_date($date) {
-	if( !preg_match( '!^\d{4}-\d{1,2}-\d{1,2}$!' , $date ) ) {
-		return false;
-	}
-	return $date;
+    if( !preg_match( '!^\d{4}-\d{1,2}-\d{1,2}$!' , $date ) ) {
+        return false;
+    }
+    return $date;
 }
 
 ?>
