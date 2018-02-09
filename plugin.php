@@ -14,33 +14,46 @@ if( !defined( 'YOURLS_ABSPATH' ) ) die();
 // Add column to admin's url listing
 yourls_add_filter('table_head_cells', 'ee_expiration_date_table_head_cells');
 function ee_expiration_date_table_head_cells($args) {
-  $args['expire-date'] = 'Expiration date';
+  $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+  if ($ee_multi_users_plugin == 1 and ee_multi_users_is_admin(YOURLS_USER) === true) {
+      return $args;
+  }
+  else {
+      $args['expire-date'] = 'Expiration date';
+  }
   return $args;
 }
 // Show date in admin's url listing
 yourls_add_filter('table_add_row_cell_array', 'ee_expiration_date_table_add_row_cell_array');
 function ee_expiration_date_table_add_row_cell_array($args) {
-  global $ydb;
-  $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
-  if ($ee_expirationdate_array[$args['keyword']['keyword_html']]) {
-      $str_date = $ee_expirationdate_array[$args['keyword']['keyword_html']];
-      $format = 'Y-m-d';
-      $date = DateTime::createFromFormat($format, $str_date);
-      $datetime = new DateTime('now');
-      $format = 'd/m/Y';
-      $str_date = date_format ( $date , $format );
-      if ( $date < $datetime ) {
 
-        $str_date = '<s>' . $str_date . '</s>';
+    $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+    if ($ee_multi_users_plugin == 1 and ee_multi_users_is_admin(YOURLS_USER) === true) {
+
+    }
+    else {
+      global $ydb;
+      $ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true );
+      if ($ee_expirationdate_array[$args['keyword']['keyword_html']]) {
+          $str_date = $ee_expirationdate_array[$args['keyword']['keyword_html']];
+          $format = 'Y-m-d';
+          $date = DateTime::createFromFormat($format, $str_date);
+          $datetime = new DateTime('now');
+          $format = 'd/m/Y';
+          $str_date = date_format ( $date , $format );
+          if ( $date < $datetime ) {
+
+            $str_date = '<s>' . $str_date . '</s>';
+          }
+      } else {
+        $str_date = "";
       }
-  } else {
-    $str_date = "";
-  }
 
-  $args['expire-date'] = array(
-    'template' => '%expire-date%',
-    'expire-date' => '<a " href=plugins.php?page=ee_expirationdate&shortname=' . $args['keyword']['keyword_html'] . '><img src="../images/pencil.png"/></a> ' . $str_date,
-  );
+      $args['expire-date'] = array(
+        'template' => '%expire-date%',
+        'expire-date' => '<a " href=plugins.php?page=ee_expirationdate&shortname=' . $args['keyword']['keyword_html'] . '><img src="../images/pencil.png"/></a> ' . $str_date,
+      );
+  }
   return $args;
 }
 
@@ -111,30 +124,51 @@ function ee_expirationdate_display_page() {
 // Set/Delete date from DB
 function ee_expirationdate_process_new() {
 	global $ydb;
-  // Sanitize
-  foreach ($_POST[ 'date' ] as $key => $value) {
-    $sanitized = ee_expiration_date_sanitize_date($value);
-    if ($sanitized === false) {
-      unset($_POST[ 'date' ][$key]);
-    } else {
-      $_POST[ 'date' ][$key] = ee_expiration_date_sanitize_date($value);
+	$ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
+
+	$ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+    $user_keywords = array();
+    if ($ee_multi_users_plugin == 1) {
+      $user_keywords = ee_multi_users_get_current_user_keywords();
     }
-  }
-	if( isset( $_POST[ 'date-unchecked' ] ) ){
-		$ee_expirationdate_array = json_decode( $ydb->option[ 'ee_expirationdate' ], true ); //Get's array of currently active Date Protected URLs
-		foreach ( $_POST[ 'date-unchecked' ] as $ee_expirationdate_unchecked ){
-			unset($ee_expirationdate_array[ $ee_expirationdate_unchecked ]);
-		}
-	}
-  yourls_update_option( 'ee_expirationdate', json_encode( $_POST[ 'date' ] ) );
+
+    // Sanitize
+    foreach ($_POST[ 'date' ] as $key => $value) {
+      if (array_search($key, $user_keywords) !== false) {
+        $sanitized = ee_expiration_date_sanitize_date($value);
+        if ($sanitized === false) {
+          unset($ee_expirationdate_array[$key]);
+        } else {
+          $ee_expirationdate_array[$key] = ee_expiration_date_sanitize_date($value);
+        }
+      }
+    }
+    foreach ( $ee_expirationdate_array as $key => $value ){
+        if ($ee_multi_users_plugin == 0 || array_search($key, $user_keywords) !== false) {
+          if (array_search($key, array_keys($_POST['date'])) === false) {
+            unset($ee_expirationdate_array[ $key ]);
+          }
+        }
+    }
+    yourls_update_option( 'ee_expirationdate', json_encode( $ee_expirationdate_array ) );
 	echo "<p style='color: green'>Success!</p>";
+  return yourls_apply_filter( 'ee_expirationdate_process_new', $_POST );
 }
 
 //Display Form
 function ee_expirationdate_process_display() {
 	global $ydb;
+    $ee_multi_users_plugin = yourls_is_active_plugin('yourls-ee-multi-users/plugin.php');
+    $user_keywords = array();
+    if ($ee_multi_users_plugin == 1) {
+      $where = ee_multi_users_admin_list_where();
+    }
+    else {
+      $where = "";
+    }
+
 	$table = YOURLS_DB_TABLE_URL;
-	$query = $ydb->get_results( "SELECT * FROM `$table` WHERE 1=1" );
+	$query = $ydb->get_results( "SELECT * FROM `$table` WHERE 1=1" . $where );
 
 	$ee_su = yourls__( "Short URL"   , "ee_expirationdate" ); //Translate "Short URL"
 	$ee_ou = yourls__( "Original URL", "ee_expirationdate" ); //Translate "Original URL"
